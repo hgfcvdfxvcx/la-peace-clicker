@@ -1,9 +1,13 @@
+```html
 <!doctype html>
 <html lang="sv">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LA PEACE Clicker</title>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{box-sizing:border-box}
@@ -344,6 +348,68 @@ h1{
   font-weight:700
 }
 
+.status{
+  padding:10px;
+  border-radius:9px;
+  background:#21170c;
+  border:1px solid #5d421d;
+  font-size:13px;
+  color:#d8c08c
+}
+
+.status.online{
+  border-color:#4c9b61;
+  color:#8cffb0
+}
+
+.status.error{
+  border-color:#9b4c4c;
+  color:#ff9b9b
+}
+
+.auth-box{
+  margin-top:12px;
+  display:grid;
+  gap:10px
+}
+
+.auth-box input{
+  width:100%;
+  padding:11px;
+  border-radius:9px;
+  border:1px solid #6e4c20;
+  background:#110c07;
+  color:white
+}
+
+.auth-buttons{
+  display:flex;
+  gap:8px
+}
+
+.auth-buttons button{
+  flex:1;
+  padding:10px;
+  border:1px solid #8d6426;
+  background:#30200d;
+  color:#ffe1a0;
+  border-radius:9px;
+  cursor:pointer;
+  font-weight:700
+}
+
+.logout{
+  margin-top:8px;
+  width:100%;
+  padding:10px;
+  border:1px solid #8d6426;
+  background:#30200d;
+  color:#ffe1a0;
+  border-radius:9px;
+  cursor:pointer;
+  font-weight:700
+}
+
 @media(max-width:800px){
   .layout{
     grid-template-columns:1fr
@@ -388,7 +454,6 @@ h1{
     Peace Points • <span id="pps">0</span>/sek
   </div>
 
-  <!-- LA PEACE-BILD -->
   <img
     id="portrait"
     class="portrait"
@@ -410,12 +475,58 @@ h1{
       maxlength="20"
       placeholder="Ditt spelarnamn"
     >
+
     <button class="small" id="savePlayer">
       Spara profil
     </button>
   </div>
 
+  <!-- ONLINE KONTO -->
+
+  <div class="auth-box">
+
+    <div id="userStatus" class="status">
+      🔴 Inte inloggad
+    </div>
+
+    <input
+      id="userEmail"
+      type="email"
+      placeholder="E-post"
+      autocomplete="email"
+    >
+
+    <input
+      id="userPassword"
+      type="password"
+      placeholder="Lösenord"
+      autocomplete="current-password"
+    >
+
+    <div class="auth-buttons">
+
+      <button id="userLogin">
+        Logga in
+      </button>
+
+      <button id="userRegister">
+        Skapa konto
+      </button>
+
+    </div>
+
+    <button
+      id="userLogout"
+      class="logout"
+      style="display:none"
+    >
+      Logga ut
+    </button>
+
+  </div>
+
   <div class="actions">
+
     <button class="small" id="save">
       Spara
     </button>
@@ -423,6 +534,7 @@ h1{
     <button class="small" id="reset">
       Reset
     </button>
+
   </div>
 
 </section>
@@ -452,7 +564,7 @@ h1{
 
   <p class="admin-note">
     Köp skins med Peace Points.
-    Premiumskins kan också delas ut av admin.
+    Premiumskins som du äger online sparas på ditt konto.
   </p>
 
   <div id="skinGrid" class="skin-grid"></div>
@@ -473,27 +585,38 @@ h1{
   <h2>🔐 Admin Panel</h2>
 
   <p class="admin-note">
-    Adminpanelen kan ge premiumskins till spelarnamn.
-    Utdelningar sparas lokalt i webbläsaren.
+    Logga in med ditt Supabase-konto.
+    Endast användare som finns i admin_users kan ge skins.
   </p>
 
   <div class="admin-box">
 
     <input
-      id="adminCode"
+      id="adminEmail"
+      type="email"
+      placeholder="Admin e-post"
+      autocomplete="username"
+    >
+
+    <input
+      id="adminPassword"
       type="password"
-      placeholder="Admin-kod"
+      placeholder="Admin lösenord"
+      autocomplete="current-password"
     >
 
     <button id="adminLogin">
-      Logga in
+      🔐 Logga in som admin
     </button>
 
+    <div id="adminStatus" class="status">
+      🔴 Inte inloggad
+    </div>
 
     <div id="adminArea" style="display:none">
 
       <div class="admin-success">
-        ✓ Admin inloggad
+        ✓ Admin verifierad av Supabase
       </div>
 
       <input
@@ -506,6 +629,10 @@ h1{
 
       <button id="grantBtn">
         🎁 Ge skin
+      </button>
+
+      <button id="adminLogout">
+        Logga ut admin
       </button>
 
       <div id="adminMessage"></div>
@@ -526,12 +653,28 @@ h1{
 <script>
 
 /* =====================================================
-   LA PEACE
+   SUPABASE
    ===================================================== */
 
+/*
+  VIKTIGT:
+  Lägg in din SUPABASE PUBLISHABLE KEY här.
 
-/* ADMINLÖSENORD */
-const ADMIN_CODE = "Boysif";
+  Använd INTE service_role/secret key.
+*/
+
+const SUPABASE_URL =
+  "https://paxkuvwadeqaendiyddq.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_G-tyqY5XALeZl7hwbGVqeA_My2W1yDy";
+
+
+const sb =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
 
 /* =====================================================
@@ -672,28 +815,6 @@ const skins = [
 
 
 /* =====================================================
-   ADMIN DATA
-   ===================================================== */
-
-/*
-  Alla skins som admin delar ut sparas här.
-
-  Exempel:
-
-  {
-    player:"Ahmed",
-    skin:"gold",
-    date:"..."
-  }
-*/
-
-let adminGrants =
-  JSON.parse(
-    localStorage.getItem("laPeaceAdminGrants") || "[]"
-  );
-
-
-/* =====================================================
    HJÄLPFUNKTIONER
    ===================================================== */
 
@@ -776,312 +897,6 @@ function save(){
 
 
 /* =====================================================
-   SPARA ADMINUTDELNINGAR
-   ===================================================== */
-
-function saveAdminGrants(){
-
-  localStorage.setItem(
-    "laPeaceAdminGrants",
-    JSON.stringify(adminGrants)
-  );
-
-}
-
-
-/* =====================================================
-   RENDER
-   ===================================================== */
-
-function render(){
-
-  document.getElementById("coins").textContent =
-    fmt(state.coins);
-
-  document.getElementById("pps").textContent =
-    fmt(pps());
-
-  document.getElementById("fill").style.width =
-    Math.min(
-      100,
-      state.coins /
-      Math.max(
-        100,
-        price(upgrades[0])
-      ) *
-      100
-    ) + "%";
-
-
-  document.getElementById("playerName").value =
-    state.player;
-
-
-  /* SHOP */
-
-  const shop =
-    document.getElementById("shop");
-
-  shop.innerHTML = "";
-
-
-  upgrades.forEach(u => {
-
-    const l = level(u);
-    const p = price(u);
-
-    const b =
-      document.createElement("button");
-
-    b.className = "upgrade";
-
-    b.disabled =
-      state.coins < p;
-
-    b.innerHTML =
-
-      '<span>' +
-
-        '<div class="name">' +
-          u.name +
-          ' • Lv ' +
-          l +
-        '</div>' +
-
-        '<div class="desc">' +
-          u.desc +
-        '</div>' +
-
-      '</span>' +
-
-      '<span class="price">' +
-        fmt(p) +
-        ' ☮️' +
-      '</span>';
-
-
-    b.onclick = () =>
-      buy(u);
-
-
-    shop.appendChild(b);
-
-  });
-
-
-  renderSkins();
-
-  renderAdminList();
-
-  updateEquippedSkin();
-
-}
-
-
-/* =====================================================
-   KÖP UPGRADE
-   ===================================================== */
-
-function buy(u){
-
-  const p = price(u);
-
-  if(state.coins < p)
-    return;
-
-
-  state.coins -= p;
-
-  state.upgrades[u.id] =
-    (state.upgrades[u.id] || 0) + 1;
-
-
-  save();
-
-  render();
-
-}
-
-
-/* =====================================================
-   SKINS
-   ===================================================== */
-
-function buySkin(s){
-
-  if(
-    state.ownedSkins.includes(s.id)
-  ){
-
-    localStorage.setItem(
-      "laPeaceEquipped",
-      s.id
-    );
-
-    render();
-
-    popup(
-      "UTRUSTAD ✨",
-      innerWidth / 2,
-      innerHeight - 80
-    );
-
-    return;
-  }
-
-
-  if(state.coins < s.price)
-    return;
-
-
-  state.coins -= s.price;
-
-  state.ownedSkins.push(s.id);
-
-
-  localStorage.setItem(
-    "laPeaceEquipped",
-    s.id
-  );
-
-
-  save();
-
-  render();
-
-
-  popup(
-    "NY SKIN! ✨",
-    innerWidth / 2,
-    innerHeight - 80
-  );
-
-}
-
-
-/* =====================================================
-   RENDER SKINS
-   ===================================================== */
-
-function renderSkins(){
-
-  const g =
-    document.getElementById("skinGrid");
-
-  g.innerHTML = "";
-
-
-  const equipped =
-    localStorage.getItem(
-      "laPeaceEquipped"
-    ) || "classic";
-
-
-  skins.forEach(s => {
-
-    const own =
-      state.ownedSkins.includes(
-        s.id
-      );
-
-
-    const b =
-      document.createElement("div");
-
-    b.className =
-      "skin" +
-      (own ? " owned" : "");
-
-
-    b.innerHTML =
-
-      '<h3>' +
-
-        s.name +
-
-        (
-          own
-          ? '<span class="badge">ÄGER</span>'
-          : ''
-        ) +
-
-      '</h3>' +
-
-      '<p>' +
-        s.desc +
-      '</p>' +
-
-      '<p><b>' +
-
-        (
-          s.price
-          ? fmt(s.price) + " ☮️"
-          : "Gratis"
-        ) +
-
-      '</b></p>' +
-
-      '<button ' +
-
-        (
-          !own &&
-          state.coins < s.price
-          ? "disabled"
-          : ""
-        ) +
-
-      '>' +
-
-        (
-          equipped === s.id
-          ? "Utrustad ✓"
-          : own
-            ? "Utrusta"
-            : "Köp"
-        ) +
-
-      '</button>';
-
-
-    b.querySelector("button")
-      .onclick = () =>
-        buySkin(s);
-
-
-    g.appendChild(b);
-
-  });
-
-}
-
-
-/* =====================================================
-   EQUIPPED SKIN
-   ===================================================== */
-
-function updateEquippedSkin(){
-
-  const equipped =
-    localStorage.getItem(
-      "laPeaceEquipped"
-    ) || "classic";
-
-
-  const skin =
-    skins.find(
-      s => s.id === equipped
-    ) || skins[0];
-
-
-  document.getElementById(
-    "portrait"
-  ).style.filter =
-    skin.filter;
-
-}
-
-
-/* =====================================================
    POPUP
    ===================================================== */
 
@@ -1100,496 +915,7 @@ function popup(text,x,y){
   el.style.top =
     y + "px";
 
+  document.body.appe
+```
 
-  document.body.appendChild(el);
 
-
-  setTimeout(
-    () => el.remove(),
-    800
-  );
-
-}
-
-
-/* =====================================================
-   CLICKA PÅ BILDEN
-   ===================================================== */
-
-document
-  .getElementById("portrait")
-  .onclick = e => {
-
-    const gain =
-      clickPower();
-
-
-    state.coins += gain;
-
-    state.total += gain;
-
-
-    popup(
-      "+" + fmt(gain) + " ☮️",
-      e.clientX,
-      e.clientY
-    );
-
-
-    render();
-
-  };
-
-
-/* =====================================================
-   SPARA
-   ===================================================== */
-
-document
-  .getElementById("save")
-  .onclick = () => {
-
-    save();
-
-    popup(
-      "SPARAT!",
-      innerWidth / 2,
-      innerHeight - 80
-    );
-
-  };
-
-
-/* =====================================================
-   SPARA SPELARNAMN
-   ===================================================== */
-
-document
-  .getElementById("savePlayer")
-  .onclick = () => {
-
-    state.player =
-      document
-        .getElementById("playerName")
-        .value
-        .trim() || "Player";
-
-
-    save();
-
-
-    popup(
-      "PROFIL SPARAD!",
-      innerWidth / 2,
-      innerHeight - 80
-    );
-
-
-    render();
-
-  };
-
-
-/* =====================================================
-   RESET
-   ===================================================== */
-
-document
-  .getElementById("reset")
-  .onclick = () => {
-
-    if(
-      confirm(
-        "Vill du verkligen börja om?"
-      )
-    ){
-
-      state = {
-        coins:0,
-        total:0,
-        upgrades:{},
-        player:"Player",
-        ownedSkins:["classic"]
-      };
-
-
-      localStorage.removeItem(
-        "laPeaceEquipped"
-      );
-
-
-      save();
-
-      render();
-
-    }
-
-  };
-
-
-/* =====================================================
-   TABS
-   ===================================================== */
-
-document
-  .querySelectorAll(".tab")
-  .forEach(t => {
-
-    t.onclick = () => {
-
-      document
-        .querySelectorAll(".tab")
-        .forEach(x =>
-          x.classList.remove("active")
-        );
-
-
-      document
-        .querySelectorAll(".panel")
-        .forEach(x =>
-          x.classList.remove("active")
-        );
-
-
-      t.classList.add("active");
-
-
-      document
-        .getElementById(
-          t.dataset.tab
-        )
-        .classList.add("active");
-
-    };
-
-  });
-
-
-/* =====================================================
-   ADMIN LOGIN
-   ===================================================== */
-
-document
-  .getElementById("adminLogin")
-  .onclick = () => {
-
-    const entered =
-      document
-        .getElementById("adminCode")
-        .value;
-
-
-    if(
-      entered === ADMIN_CODE
-    ){
-
-      document
-        .getElementById("adminArea")
-        .style.display = "grid";
-
-
-      const sel =
-        document
-          .getElementById("grantSkin");
-
-
-      sel.innerHTML = "";
-
-
-      skins
-        .filter(
-          s => s.id !== "classic"
-        )
-        .forEach(s => {
-
-          const option =
-            document.createElement(
-              "option"
-            );
-
-          option.value =
-            s.id;
-
-          option.textContent =
-            s.name;
-
-
-          sel.appendChild(
-            option
-          );
-
-        });
-
-
-      renderAdminList();
-
-
-    }else{
-
-      alert(
-        "Fel admin-kod."
-      );
-
-    }
-
-  };
-
-
-/* =====================================================
-   GE SKIN TILL SPELARE
-   ===================================================== */
-
-document
-  .getElementById("grantBtn")
-  .onclick = () => {
-
-    const player =
-      document
-        .getElementById("grantPlayer")
-        .value
-        .trim();
-
-
-    const skinId =
-      document
-        .getElementById("grantSkin")
-        .value;
-
-
-    const message =
-      document
-        .getElementById("adminMessage");
-
-
-    message.textContent = "";
-
-
-    /* Kontrollera spelarnamn */
-
-    if(!player){
-
-      message.innerHTML =
-        '<span style="color:#ff8a8a">' +
-        'Skriv ett spelarnamn först.' +
-        '</span>';
-
-      return;
-    }
-
-
-    /* Kontrollera skin */
-
-    const skin =
-      skins.find(
-        s => s.id === skinId
-      );
-
-
-    if(!skin){
-
-      message.innerHTML =
-        '<span style="color:#ff8a8a">' +
-        'Välj ett skin.' +
-        '</span>';
-
-      return;
-    }
-
-
-    /* Spara utdelningen */
-
-    const grant = {
-
-      player:player,
-
-      skinId:skin.id,
-
-      skinName:skin.name,
-
-      date:new Date()
-        .toLocaleString("sv-SE")
-
-    };
-
-
-    adminGrants.push(
-      grant
-    );
-
-
-    saveAdminGrants();
-
-
-    /*
-      Om spelaren är samma profil
-      som den aktuella webbläsaren
-      får profilen även skinnet direkt.
-    */
-
-    if(
-      player.toLowerCase() ===
-      state.player.toLowerCase()
-    ){
-
-      if(
-        !state.ownedSkins.includes(
-          skin.id
-        )
-      ){
-
-        state.ownedSkins.push(
-          skin.id
-        );
-
-      }
-
-
-      save();
-
-      render();
-
-    }
-
-
-    message.innerHTML =
-      '<span class="admin-success">' +
-      '✓ ' +
-      skin.name +
-      ' gavs till ' +
-      player +
-      '!' +
-      '</span>';
-
-
-    document
-      .getElementById("grantPlayer")
-      .value = "";
-
-
-    renderAdminList();
-
-  };
-
-
-/* =====================================================
-   ADMIN-LISTA
-   ===================================================== */
-
-function renderAdminList(){
-
-  const list =
-    document
-      .getElementById("adminList");
-
-
-  if(!list)
-    return;
-
-
-  if(
-    adminGrants.length === 0
-  ){
-
-    list.innerHTML =
-      '<div class="empty">' +
-      'Inga skins har delats ut ännu.' +
-      '</div>';
-
-    return;
-
-  }
-
-
-  list.innerHTML =
-    "<strong>🎁 Utdelade skins:</strong>";
-
-
-  /*
-    Visa senaste först
-  */
-
-  [...adminGrants]
-    .reverse()
-    .forEach((grant,index) => {
-
-      const div =
-        document.createElement("div");
-
-      div.className =
-        "admin-record";
-
-
-      div.innerHTML =
-
-        "👤 <strong>" +
-        escapeHTML(grant.player) +
-        "</strong><br>" +
-
-        "✨ " +
-        escapeHTML(grant.skinName) +
-        "<br>" +
-
-        "🕒 " +
-        escapeHTML(grant.date);
-
-
-      list.appendChild(div);
-
-    });
-
-}
-
-
-/* =====================================================
-   SKYDDA TEXT I ADMINLISTAN
-   ===================================================== */
-
-function escapeHTML(text){
-
-  const div =
-    document.createElement("div");
-
-  div.textContent =
-    text;
-
-  return div.innerHTML;
-
-}
-
-
-/* =====================================================
-   AUTOMATISK PPS
-   ===================================================== */
-
-setInterval(() => {
-
-  const income =
-    pps();
-
-
-  if(income > 0){
-
-    state.coins += income;
-
-    state.total += income;
-
-    save();
-
-    render();
-
-  }
-
-},1000);
-
-
-/* =====================================================
-   START
-   ===================================================== */
-
-render();
-
-</script>
-
-</body>
-</html>
-sb_publishable_G-tyqY5XALeZl7hwbGVqeA_My2W1yDy
