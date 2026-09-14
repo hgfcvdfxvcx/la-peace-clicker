@@ -17,9 +17,9 @@
   <div class="auth-card">
     <h1>☮️ LA PEACE</h1>
     <p class="sub">Logga in för att spela på rätt konto.</p>
-    <input id="authEmail" type="email" autocomplete="email" placeholder="E-post">
+    <input id="authEmail" type="text" placeholder="Användarnamn" autocomplete="username">
     <input id="authPassword" type="password" autocomplete="current-password" placeholder="Lösenord">
-    <input id="authUsername" type="text" maxlength="20" autocomplete="nickname" placeholder="Spelarnamn (bara vid registrering)">
+    
     <button id="loginBtn">Logga in</button>
     <button id="signupBtn">Skapa konto</button>
     <div id="authStatus" class="auth-status"></div>
@@ -228,8 +228,31 @@ function showApp(row){document.getElementById("authGate").classList.add("hidden"
 function showAuth(){document.getElementById("authGate").classList.remove("hidden");document.getElementById("app").classList.add("hidden")}
 function setAuthStatus(msg){document.getElementById("authStatus").textContent=msg}
 
-document.getElementById("signupBtn").onclick=async()=>{const email=document.getElementById("authEmail").value.trim(),password=document.getElementById("authPassword").value,username=document.getElementById("authUsername").value.trim()||"Player";if(!email||!password)return setAuthStatus("Fyll i e-post och lösenord.");if(password.length<6)return setAuthStatus("Lösenordet måste vara minst 6 tecken.");try{setAuthStatus("Skapar konto...");const data=await signUp(email,password,username);if(data.access_token){saveSession(data);const row=await ensurePlayerRow();showApp(row);await loadRemotePoints();await loadRemoteSkins()}else setAuthStatus("Kontot skapades. Bekräfta din e-post om Supabase kräver det och logga sedan in.")}catch(error){setAuthStatus("Kunde inte skapa konto: "+error.message)}};
-document.getElementById("loginBtn").onclick=async()=>{const email=document.getElementById("authEmail").value.trim(),password=document.getElementById("authPassword").value;if(!email||!password)return setAuthStatus("Fyll i e-post och lösenord.");try{setAuthStatus("Loggar in...");const data=await signIn(email,password);const row=await ensurePlayerRow();showApp(row);await loadRemotePoints();await loadRemoteSkins();setAuthStatus("")}catch(error){clearSession();setAuthStatus("Kunde inte logga in: "+error.message)}};
+document.getElementById("signupBtn").onclick = async () => {
+  const username = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  if(!username || !password) return setAuthStatus("Fyll i användarnamn och lösenord.");
+  if(password.length < 6) return setAuthStatus("Lösenordet måste vara minst 6 tecken.");
+  try{
+    setAuthStatus("Skapar konto...");
+    const data = await signUp(username,password,username);
+    if(data.access_token){
+      saveSession(data);
+      const row = await ensurePlayerRow();
+      showApp(row);
+      await loadRemotePoints();
+      await loadRemoteSkins();
+      setAuthStatus("");
+      return;
+    }
+    setAuthStatus("Kunde inte logga in automatiskt. Kontrollera Supabase-inställningarna.");
+  }catch(error){
+    console.error(error);
+    setAuthStatus("Kunde inte skapa konto: "+error.message);
+  }
+};
+
+document.getElementById("loginBtn").onclick=async()=>{const email=document.getElementById("authEmail").value.trim(),password=document.getElementById("authPassword").value;if(!email||!password)return setAuthStatus("Fyll i användarnamn och lösenord.");try{setAuthStatus("Loggar in...");const data=await signIn(email,password);const row=await ensurePlayerRow();showApp(row);await loadRemotePoints();await loadRemoteSkins();setAuthStatus("")}catch(error){clearSession();setAuthStatus("Kunde inte logga in: "+error.message)}};
 document.getElementById("logoutBtn").onclick=async()=>{await signOut();showAuth();setAuthStatus("Du är utloggad.")};
 
 setInterval(()=>{if(pps()>0){state.coins+=pps();state.total+=pps();render()}},1000);
