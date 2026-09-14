@@ -9,7 +9,7 @@
 .tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}.tab{padding:10px 14px;border:1px solid #76531f;background:#21170c;color:#f4d89a;border-radius:10px;cursor:pointer;font-weight:700}.tab.active{background:#5b3a0d;border-color:#d59a38;color:#ffe08a}.panel{display:none}.panel.active{display:block}.skin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.skin{background:#21170c;border:1px solid #6e4c20;border-radius:15px;padding:12px}.skin h3{margin:0 0 5px;color:#ffd66b}.skin p{margin:5px 0;color:#c9b27d;font-size:13px}.skin button,.admin button{width:100%;padding:10px;border:1px solid #8d6426;background:#30200d;color:#ffe1a0;border-radius:9px;cursor:pointer;font-weight:700}.skin button:disabled{opacity:.45;cursor:not-allowed}.badge{display:inline-block;padding:3px 7px;border-radius:999px;background:#5b3a0d;color:#ffe08a;font-size:11px;margin-left:5px}.admin-box{display:grid;gap:10px}.admin-box input{width:100%;padding:11px;border-radius:9px;border:1px solid #6e4c20;background:#110c07;color:white}.admin-note{font-size:12px;color:#bfa979;line-height:1.45}.playerbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.playerbar input{flex:1;min-width:180px;padding:10px;border-radius:9px;border:1px solid #6e4c20;background:#110c07;color:white}.owned{border-color:#d59a38}.admin-list{margin-top:10px;color:#d8c08c;font-size:13px;line-height:1.7}.leaderboard{display:grid;gap:10px}.leader-row{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:10px;background:#21170c;border:1px solid #6e4c20;border-radius:12px;padding:12px}.leader-rank{font-size:22px;font-weight:900;text-align:center}.leader-name{font-weight:800;color:#ffe08a}.leader-points{font-weight:900;color:#fff0bf}.leader-me{border-color:#d59a38;box-shadow:0 0 0 1px #d59a38 inset}.leader-note{color:#bfa979;font-size:12px;margin-top:8px}
 </style>
 <style>
-.auth-gate{min-height:100vh;display:flex;align-items:center;justify-content:center;width:100%;padding:24px}.auth-card{width:min(460px,100%);background:#17100aee;border:1px solid #a9782d88;border-radius:20px;box-shadow:0 12px 40px #0009;padding:24px;text-align:center}.auth-card h1{margin-top:0}.auth-card input{width:100%;padding:13px;margin:7px 0;border-radius:10px;border:1px solid #6e4c20;background:#110c07;color:#fff}.auth-card button{width:100%;padding:12px;margin-top:8px;border:1px solid #8d6426;background:#30200d;color:#ffe1a0;border-radius:10px;cursor:pointer;font-weight:700}.auth-status{min-height:22px;margin:10px 0;color:#ffd66b}.account-bar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 0 14px;color:#e7c98a}.account-bar button{padding:7px 12px;border:1px solid #6e4c20;background:#21170c;color:#e8cf9b;border-radius:8px;cursor:pointer}.hidden{display:none!important}
+.auth-gate{min-height:100vh;display:flex;align-items:center;justify-content:center;width:100%;padding:24px}.auth-card{width:min(460px,100%);background:#17100aee;border:1px solid #a9782d88;border-radius:20px;box-shadow:0 12px 40px #0009;padding:24px;text-align:center}.auth-card h1{margin-top:0}.auth-card input{width:100%;padding:13px;margin:7px 0;border-radius:10px;border:1px solid #6e4c20;background:#110c07;color:#fff}.auth-card button{width:100%;padding:12px;margin-top:8px;border:1px solid #8d6426;background:#30200d;color:#ffe1a0;border-radius:10px;cursor:pointer;font-weight:700}.auth-status{min-height:22px;margin:10px 0;color:#ffd66b}.account-bar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 0 14px;color:#e7c98a}.account-bar button{padding:7px 12px;border:1px solid #6e4c20;background:#21170c;color:#e8cf9b;border-radius:8px;cursor:pointer}.hidden{display:none!important}\nbutton,input,select{pointer-events:auto!important;position:relative;z-index:5}.auth-gate{position:relative;z-index:1000;pointer-events:auto}.auth-card{position:relative;z-index:1001;pointer-events:auto}.auth-card button,.auth-card input{pointer-events:auto!important}
 </style>
 <!-- Username-only login uses players.password_hash. -->
 </head>
@@ -200,8 +200,8 @@ async function saveGameRemote(){save()}
 const portrait=document.getElementById("portrait");
 let lastRealClick=0;
 let clickLock=false;
-portrait.onclick=async e=>{
-  // Block clicks generated from the DevTools console / scripts.
+portrait.addEventListener("click",async e=>{
+  // Only accept genuine browser input. Synthetic Console clicks are ignored.
   if(!e || e.isTrusted!==true) return;
   const now=performance.now();
   if(now-lastRealClick<70 || clickLock) return;
@@ -214,8 +214,10 @@ portrait.onclick=async e=>{
     render();
     await addRemotePoints(gain);
     await loadRemotePoints();
+  }catch(error){
+    console.warn("Klick kunde inte synkas:",error.message);
   }finally{clickLock=false}
-};
+});
 document.getElementById("save").onclick=()=>{save();popup("SPARAT!",innerWidth/2,innerHeight-80)};
 document.getElementById("savePlayer").onclick=async()=>{state.player=document.getElementById("playerName").value.trim()||"Player";save();await syncPlayerProfile();popup("PROFIL SPARAD!",innerWidth/2,innerHeight-80);render()};
 document.getElementById("reset").onclick=()=>{if(confirm("Vill du verkligen börja om?")){state.coins=0;state.total=0;state.upgrades={};state.ownedSkins=["classic"];state.remotePointsApplied=0;localStorage.removeItem("laPeaceEquipped");save();render()}};
@@ -279,7 +281,7 @@ function showApp(row){document.getElementById("authGate").classList.add("hidden"
 function showAuth(){document.getElementById("authGate").classList.remove("hidden");document.getElementById("app").classList.add("hidden")}
 function setAuthStatus(msg){document.getElementById("authStatus").textContent=msg}
 
-document.getElementById("signupBtn").onclick=async()=>{
+document.getElementById("signupBtn").addEventListener("click",async e=>{e.preventDefault();e.stopPropagation();
   const username=document.getElementById("authEmail").value.trim();
   const password=document.getElementById("authPassword").value;
   if(!username||!password)return setAuthStatus("Fyll i användarnamn och lösenord.");
@@ -290,9 +292,9 @@ document.getElementById("signupBtn").onclick=async()=>{
     state.playerId=row.player_id;state.player=row.username;state.remotePointsApplied=0;save();
     showApp(row);await loadRemotePoints();await loadRemoteSkins();await loadGlobalPrices();setAuthStatus("");
   }catch(error){console.error(error);setAuthStatus("Kunde inte skapa konto: "+error.message)}
-};
+});
 
-document.getElementById("loginBtn").onclick=async()=>{
+document.getElementById("loginBtn").addEventListener("click",async e=>{e.preventDefault();e.stopPropagation();
   const username=document.getElementById("authEmail").value.trim();
   const password=document.getElementById("authPassword").value;
   if(!username||!password)return setAuthStatus("Fyll i användarnamn och lösenord.");
@@ -302,8 +304,8 @@ document.getElementById("loginBtn").onclick=async()=>{
     state.playerId=row.player_id;state.player=row.username;if(!Number.isFinite(Number(state.remotePointsApplied)))state.remotePointsApplied=0;save();
     showApp(row);await loadRemotePoints();await loadRemoteSkins();await loadGlobalPrices();setAuthStatus("");
   }catch(error){console.error(error);setAuthStatus("Kunde inte logga in: "+error.message)}
-};
-document.getElementById("logoutBtn").onclick=async()=>{await signOut();showAuth();setAuthStatus("Du är utloggad.")};
+});
+document.getElementById("logoutBtn").addEventListener("click",async e=>{e.preventDefault();e.stopPropagation();await signOut();showAuth();setAuthStatus("Du är utloggad.")});
 
 setInterval(async()=>{if(pps()>0&&getToken()){const gain=Math.min(100,Math.max(1,pps()));state.coins+=gain;state.total+=gain;render();await addRemotePoints(gain);}},1000);
 setInterval(save,5000);
