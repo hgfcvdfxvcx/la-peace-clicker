@@ -459,10 +459,9 @@ document.getElementById("loginBtn").onclick=async()=>{
 };
 document.getElementById("logoutBtn").onclick=async()=>{await signOut();showAuth();setAuthStatus("Du är utloggad.")};
 
-setInterval(()=>{if(pps()>0){state.coins+=pps();state.total+=pps();render();queueRemoteSave()}},1000);
+setInterval(()=>{if(pps()>0){state.coins+=pps();state.total+=pps();render()}},1000);
 setInterval(save,5000);
-setInterval(()=>{if(getPlayerId()) saveGameRemote()},750);
-setInterval(()=>{if(getPlayerId()) loadRemotePoints()},1000);
+setInterval(()=>{if(getPlayerId()) loadRemotePoints()},5000);
 let liveSyncBusy=false;
 async function liveSync(){
   if(!getPlayerId()||liveSyncBusy)return;
@@ -477,7 +476,7 @@ async function liveSync(){
     liveSyncBusy=false;
   }
 }
-setInterval(liveSync,1000);
+setInterval(liveSync,2000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&getPlayerId())liveSync()});
 
 (async()=>{
