@@ -462,8 +462,22 @@ document.getElementById("logoutBtn").onclick=async()=>{await signOut();showAuth(
 setInterval(()=>{if(pps()>0){state.coins+=pps();state.total+=pps();render()}},1000);
 setInterval(save,5000);
 setInterval(()=>{if(getPlayerId()) loadRemotePoints()},5000);
-setInterval(()=>{if(getPlayerId()) loadLeaderboard()},2000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&getPlayerId()){loadLeaderboard();loadRemotePoints()}});
+let liveSyncBusy=false;
+async function liveSync(){
+  if(!getPlayerId()||liveSyncBusy)return;
+  liveSyncBusy=true;
+  try{
+    await loadRemotePoints();
+    await saveRemotePoints();
+    await loadLeaderboard();
+  }catch(error){
+    console.warn("Live-synk misslyckades:",error.message);
+  }finally{
+    liveSyncBusy=false;
+  }
+}
+setInterval(liveSync,2000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&getPlayerId())liveSync()});
 
 (async()=>{
   const local=getLocalPlayer();
