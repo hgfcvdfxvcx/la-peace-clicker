@@ -6,7 +6,7 @@
 <title>LA PEACE Clicker</title>
 <style>
 *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:#fff;background:radial-gradient(circle at top,#70470f,#241706 55%,#080604);display:flex;justify-content:center;padding:24px}.game{width:min(1050px,100%)}header{text-align:center;margin-bottom:18px}h1{margin:0;font-size:42px;letter-spacing:3px;color:#ffd66b;text-shadow:0 0 20px #ffb52e}.sub{color:#e7c98a;margin-top:5px}.layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.card{background:#17100aee;border:1px solid #a9782d88;border-radius:20px;box-shadow:0 12px 40px #0009,inset 0 0 25px #ffb52e0a;padding:18px}.score{text-align:center}.coins{font-size:38px;font-weight:800;color:#ffd66b}.rate{color:#d9bd7d;margin-bottom:14px}.portrait{width:min(100%,520px);aspect-ratio:1.28;border-radius:18px;object-fit:cover;border:3px solid #d59a38;box-shadow:0 0 35px #ffb52e55;cursor:pointer;transition:.12s;user-select:none}.portrait:hover{transform:scale(1.015)}.portrait:active{transform:scale(.97)}.hint{margin:12px 0 0;color:#c9b27d}.shop h2{margin-top:0;color:#ffd66b}.upgrade{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px;margin:9px 0;border:1px solid #6e4c20;border-radius:13px;background:#21170c;color:#fff;text-align:left;cursor:pointer}.upgrade:hover:not(:disabled){background:#30200d;border-color:#d59a38}.upgrade:disabled{opacity:.42;cursor:not-allowed}.name{font-weight:800}.desc{font-size:12px;color:#bfa979;margin-top:4px}.price{font-weight:800;color:#ffd66b;white-space:nowrap}.bar{height:8px;background:#34240f;border-radius:99px;overflow:hidden;margin-top:14px}.fill{height:100%;width:0;background:linear-gradient(90deg,#c98221,#ffe08a);transition:.2s}.actions{display:flex;gap:8px;margin-top:12px}.small{flex:1;padding:10px;border:1px solid #6e4c20;background:#21170c;color:#e8cf9b;border-radius:10px;cursor:pointer}.float{position:fixed;pointer-events:none;font-weight:900;color:#ffe18a;font-size:24px;animation:float .8s ease-out forwards;text-shadow:0 2px 8px #000}@keyframes float{to{transform:translateY(-80px);opacity:0}}@media(max-width:800px){.layout{grid-template-columns:1fr}h1{font-size:32px}}
-.tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}.tab{padding:10px 14px;border:1px solid #76531f;background:#21170c;color:#f4d89a;border-radius:10px;cursor:pointer;font-weight:700}.tab.active{background:#5b3a0d;border-color:#d59a38;color:#ffe08a}.panel{display:none}.panel.active{display:block}.skin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.skin{background:#21170c;border:1px solid #6e4c20;border-radius:15px;padding:12px}.skin h3{margin:0 0 5px;color:#ffd66b}.skin p{margin:5px 0;color:#c9b27d;font-size:13px}.skin button,.admin button{width:100%;padding:10px;border:1px solid #8d6426;background:#30200d;color:#ffe1a0;border-radius:9px;cursor:pointer;font-weight:700}.skin button:disabled{opacity:.45;cursor:not-allowed}.badge{display:inline-block;padding:3px 7px;border-radius:999px;background:#5b3a0d;color:#ffe08a;font-size:11px;margin-left:5px}.admin-box{display:grid;gap:10px}.admin-box input{width:100%;padding:11px;border-radius:9px;border:1px solid #6e4c20;background:#110c07;color:white}.admin-note{font-size:12px;color:#bfa979;line-height:1.45}.playerbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.playerbar input{flex:1;min-width:180px;padding:10px;border-radius:9px;border:1px solid #6e4c20;background:#110c07;color:white}.owned{border-color:#d59a38}.admin-list{margin-top:10px;color:#d8c08c;font-size:13px;line-height:1.7}
+.tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}.tab{padding:10px 14px;border:1px solid #76531f;background:#21170c;color:#f4d89a;border-radius:10px;cursor:pointer;font-weight:700}.tab.active{background:#5b3a0d;border-color:#d59a38;color:#ffe08a}.panel{display:none}.panel.active{display:block}.skin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.skin{background:#21170c;border:1px solid #6e4c20;border-radius:15px;padding:12px}.skin h3{margin:0 0 5px;color:#ffd66b}.skin p{margin:5px 0;color:#c9b27d;font-size:13px}.skin button,.admin button{width:100%;padding:10px;border:1px solid #8d6426;background:#30200d;color:#ffe1a0;border-radius:9px;cursor:pointer;font-weight:700}.skin button:disabled{opacity:.45;cursor:not-allowed}.badge{display:inline-block;padding:3px 7px;border-radius:999px;background:#5b3a0d;color:#ffe08a;font-size:11px;margin-left:5px}.admin-box{display:grid;gap:10px}.admin-box input{width:100%;padding:11px;border-radius:9px;border:1px solid #6e4c20;background:#110c07;color:white}.admin-note{font-size:12px;color:#bfa979;line-height:1.45}.playerbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.playerbar input{flex:1;min-width:180px;padding:10px;border-radius:9px;border:1px solid #6e4c20;background:#110c07;color:white}.owned{border-color:#d59a38}.admin-list{margin-top:10px;color:#d8c08c;font-size:13px;line-height:1.7}.leaderboard{display:grid;gap:10px}.leader-row{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:10px;background:#21170c;border:1px solid #6e4c20;border-radius:12px;padding:12px}.leader-rank{font-size:22px;font-weight:900;text-align:center}.leader-name{font-weight:800;color:#ffe08a}.leader-points{font-weight:900;color:#fff0bf}.leader-me{border-color:#d59a38;box-shadow:0 0 0 1px #d59a38 inset}.leader-note{color:#bfa979;font-size:12px;margin-top:8px}
 </style>
 <style>
 .auth-gate{min-height:100vh;display:flex;align-items:center;justify-content:center;width:100%;padding:24px}.auth-card{width:min(460px,100%);background:#17100aee;border:1px solid #a9782d88;border-radius:20px;box-shadow:0 12px 40px #0009;padding:24px;text-align:center}.auth-card h1{margin-top:0}.auth-card input{width:100%;padding:13px;margin:7px 0;border-radius:10px;border:1px solid #6e4c20;background:#110c07;color:#fff}.auth-card button{width:100%;padding:12px;margin-top:8px;border:1px solid #8d6426;background:#30200d;color:#ffe1a0;border-radius:10px;cursor:pointer;font-weight:700}.auth-status{min-height:22px;margin:10px 0;color:#ffd66b}.account-bar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 0 14px;color:#e7c98a}.account-bar button{padding:7px 12px;border:1px solid #6e4c20;background:#21170c;color:#e8cf9b;border-radius:8px;cursor:pointer}.hidden{display:none!important}
@@ -35,6 +35,7 @@
 <div class="tabs">
 <button class="tab active" data-tab="game">🎮 Spel</button>
 <button class="tab" data-tab="skins">✨ Premium Skins</button>
+<button class="tab" data-tab="leaderboard">🏆 Leaderboard</button>
 <button class="tab" data-tab="admin">🔐 Admin</button>
 </div>
 <section id="game" class="panel active">
@@ -54,16 +55,25 @@
 <section id="skins" class="panel">
 <div class="card"><h2>✨ Premium Skin Shop</h2><p class="admin-note">Köp skins med Peace Points. Premiumskins kan också delas ut av admin.</p><div id="skinGrid" class="skin-grid"></div></div>
 </section>
+<section id="leaderboard" class="panel">
+<div class="card">
+  <h2>🏆 LA PEACE Leaderboard</h2>
+  <p class="admin-note">Topplistan sorteras efter spelarens sparade Peace Points.</p>
+  <div id="leaderboardList" class="leaderboard"><div class="admin-list">Laddar topplistan...</div></div>
+  <p id="leaderboardStatus" class="leader-note"></p>
+  <button id="refreshLeaderboardBtn" style="margin-top:10px;width:100%;padding:10px;border:1px solid #8d6426;background:#30200d;color:#ffe1a0;border-radius:9px;cursor:pointer;font-weight:700">🔄 Uppdatera leaderboard</button>
+</div>
+</section>
 <section id="admin" class="panel admin">
 <div class="card">
   <h2>🔐 LA PEACE Admin Panel</h2>
-  <p class="admin-note"><b>Adminverktyg:</b> ge Peace Points, dela ut/lås upp skins, ta bort skins, ändra priser och visa spelare.</p>
+  <p class="admin-note"><b>Adminverktyg:</b> ge eller ta bort Peace Points, dela ut/lås upp skins, ta bort skins, ändra priser och visa spelare.</p>
   <div class="admin-box">
     <input id="adminCode" type="password" placeholder="Admin-kod">
     <button id="adminLogin">Logga in</button>
     <div id="adminArea" style="display:none;gap:12px">
       <div class="card" style="padding:14px"><h3>👤 Spelare</h3><input id="adminPlayer" maxlength="60" placeholder="Player ID, t.ex. LP-ABC12345"><button id="showPlayerBtn">Visa spelare</button><div id="playerInfo" class="admin-list"></div></div>
-      <div class="card" style="padding:14px"><h3>☮️ Peace Points</h3><input id="pointsAmount" type="number" min="1" value="1000" placeholder="Antal Peace Points"><button id="givePointsBtn">Ge Peace Points</button><button id="refreshPointsBtn" style="margin-left:8px">🔄 Uppdatera</button></div>
+      <div class="card" style="padding:14px"><h3>☮️ Peace Points</h3><input id="pointsAmount" type="number" min="1" value="1000" placeholder="Antal Peace Points"><button id="givePointsBtn">Ge Peace Points</button><button id="removePointsBtn" style="margin-top:8px;background:#3a120d;border-color:#a33;color:#ffd0c0">🗑️ Ta bort alla poäng</button><button id="refreshPointsBtn" style="margin-left:8px">🔄 Uppdatera</button></div>
       <div class="card" style="padding:14px"><h3>✨ Skins</h3><select id="grantSkin" style="width:100%;padding:11px;border-radius:9px;background:#110c07;color:white;border:1px solid #6e4c20"></select><button id="grantBtn">Ge / lås upp skin</button><button id="removeSkinBtn">Ta bort skin</button></div>
       <div class="card" style="padding:14px"><h3>💰 Ändra priser</h3><select id="priceSkin" style="width:100%;padding:11px;border-radius:9px;background:#110c07;color:white;border:1px solid #6e4c20"></select><input id="newPrice" type="number" min="0" value="5000" placeholder="Nytt pris i Peace Points"><button id="setPriceBtn">Spara nytt pris</button><div id="priceInfo" class="admin-list"></div></div>
       <div class="card" style="padding:14px"><h3>📋 Spelarlista</h3><div id="adminList" class="admin-list"></div></div>
@@ -236,10 +246,14 @@ async function loadRemotePoints(){
       render();
       popup("+"+fmt(diff)+" ADMIN ☮️",innerWidth/2,innerHeight-80);
     }else if(remote<applied){
-      // Database was reset/changed. Re-sync the baseline without
-      // taking coins away from the player.
+      // Admin reset/reduced the remote Peace Points. Remove the
+      // corresponding granted amount from the local balance too.
+      const removed=applied-remote;
+      state.coins=Math.max(0,Number(state.coins||0)-removed);
       state.remotePointsApplied=remote;
       save();
+      render();
+      popup("-"+fmt(removed)+" ADMIN 🗑️",innerWidth/2,innerHeight-80);
     }
   }catch(error){
     console.warn("Kunde inte hämta Peace Points:",error.message);
@@ -268,6 +282,44 @@ document.getElementById("savePlayer").onclick=async()=>{state.player=document.ge
 document.getElementById("reset").onclick=()=>{if(confirm("Vill du verkligen börja om?")){state.coins=0;state.total=0;state.upgrades={};state.ownedSkins=["classic"];state.remotePointsApplied=0;localStorage.removeItem("laPeaceEquipped");save();render()}};
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));t.classList.add("active");document.getElementById(t.dataset.tab).classList.add("active")});
 
+document.getElementById("refreshLeaderboardBtn")?.addEventListener("click",loadLeaderboard);
+document.querySelectorAll('.tab[data-tab="leaderboard"]').forEach(b=>b.addEventListener("click",loadLeaderboard));
+
+async function loadLeaderboard(){
+  const el=document.getElementById("leaderboardList");
+  const status=document.getElementById("leaderboardStatus");
+  if(!el)return;
+  el.innerHTML='<div class="admin-list">Laddar topplistan...</div>';
+  try{
+    const data=await sbSelect("players","?select=player_id,username,peace_points&order=peace_points.desc&limit=50",false);
+    const rows=Array.isArray(data)?data:[];
+    if(!rows.length){
+      el.innerHTML='<div class="admin-list">Ingen har fått några Peace Points ännu.</div>';
+      if(status)status.textContent="";
+      return;
+    }
+    const medals=["🥇","🥈","🥉"];
+    el.innerHTML=rows.map((p,i)=>{
+      const me=getPlayerId()&&String(p.player_id)===String(getPlayerId());
+      const rank=i<3?medals[i]:(i+1)+".";
+      return '<div class="leader-row '+(me?'leader-me':'')+'">'+
+        '<div class="leader-rank">'+rank+'</div>'+
+        '<div><div class="leader-name">'+escapeHtml(p.username||"Player")+(me?' <span class="badge">DU</span>':'')+'</div><div class="leader-note">Player ID: '+escapeHtml(String(p.player_id||""))+'</div></div>'+
+        '<div class="leader-points">'+fmt(Math.max(0,Number(p.peace_points||0)))+' ☮️</div>'+
+      '</div>';
+    }).join("");
+    if(status)status.textContent="Visar topp "+rows.length+" spelare.";
+  }catch(error){
+    console.error(error);
+    el.innerHTML='<div class="admin-list">Kunde inte läsa leaderboard: '+escapeHtml(error.message||String(error))+'</div>';
+    if(status)status.textContent="Kontrollera Supabase-behörigheter för players.";
+  }
+}
+
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;", "'":"&#39;"}[m]));
+}
+
 function renderAdminControls(){const options=skins.filter(s=>s.id!=="classic").map(s=>'<option value="'+s.id+'">'+s.name+'</option>').join("");document.getElementById("grantSkin").innerHTML=options;document.getElementById("priceSkin").innerHTML=options;renderAdminList();updatePriceInfo()}
 async function renderAdminList(){const el=document.getElementById("adminList");if(!el)return;try{const data=await sbSelect("players","?select=player_id,username,peace_points&order=created_at.desc&limit=50");if(!data?.length){el.innerHTML="<b>Inga spelare registrerade ännu.</b>";return}el.innerHTML="<b>Spelare:</b><br>"+data.map(p=>"👤 "+(p.username||"Player")+" — ID: "+p.player_id+" — Points: "+fmt(p.peace_points||0)).join("<br>")}catch(error){el.innerHTML="Kunde inte läsa spelarlistan: "+error.message}}
 function updatePriceInfo(){const d=adminData(),id=document.getElementById("priceSkin")?.value,s=skins.find(x=>x.id===id);if(!s)return;const p=d.prices[id]??s.price;document.getElementById("priceInfo").textContent="Aktuellt pris: "+fmt(p)+" ☮️"}
@@ -293,6 +345,30 @@ if(savedAmount!==newAmount) throw new Error("Supabase sparade inte poängen. Kon
 document.getElementById("pointsAmount").value="";
 popup("+"+fmt(amount)+" ☮️",innerWidth/2,innerHeight-80);
 document.getElementById("showPlayerBtn").click()}catch(error){alert("Kunde inte ge Peace Points: "+error.message)}};
+document.getElementById("removePointsBtn").onclick=async()=>{
+  const player=selectedPlayer();
+  if(!player)return alert("Skriv ett Player ID.");
+  const ok=confirm("Ta bort ALLA sparade Peace Points för spelaren?\n\nPlayer ID: "+player+"\n\nDetta sätter spelarens Peace Points i databasen till 0.");
+  if(!ok)return;
+  try{
+    const players=await sbSelect("players","?select=player_id,username,peace_points&player_id=eq."+encodeURIComponent(player)+"&limit=1",false);
+    if(!players?.length)return alert("Spelaren finns inte.");
+    await sbPatch("players","?player_id=eq."+encodeURIComponent(player),{peace_points:0});
+    const verify=await sbSelect("players","?select=peace_points&player_id=eq."+encodeURIComponent(player)+"&limit=1",false);
+    const saved=Number(verify?.[0]?.peace_points);
+    if(saved!==0)throw new Error("Supabase sparade inte 0 poäng. Kontrollera RLS/UPDATE-behörighet.");
+    if(player===getPlayerId()){
+      state.coins=0;
+      state.remotePointsApplied=0;
+      save();
+      render();
+    }
+    popup("POÄNG BORTTAGNA 🗑️",innerWidth/2,innerHeight-80);
+    document.getElementById("showPlayerBtn").click();
+  }catch(error){
+    alert("Kunde inte ta bort spelarens poäng: "+error.message);
+  }
+};
 document.getElementById("priceSkin").onchange=updatePriceInfo;
 
 const PRICE_SETTINGS_PLAYER="__LA_PEACE_PRICES__";
@@ -377,7 +453,7 @@ document.getElementById("setPriceBtn").onclick=async()=>{
 };
 
 // Auth UI
-function showApp(row){document.getElementById("authGate").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("loggedInName").textContent=row.username||state.player||"Player";document.getElementById("myPlayerId").textContent=row.player_id;document.getElementById("adminPlayer").value=row.player_id;render()}
+function showApp(row){document.getElementById("authGate").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("loggedInName").textContent=row.username||state.player||"Player";document.getElementById("myPlayerId").textContent=row.player_id;document.getElementById("adminPlayer").value=row.player_id;render();loadLeaderboard()}
 function showAuth(){document.getElementById("authGate").classList.remove("hidden");document.getElementById("app").classList.add("hidden")}
 function setAuthStatus(msg){document.getElementById("authStatus").textContent=msg}
 
@@ -410,6 +486,7 @@ document.getElementById("logoutBtn").onclick=async()=>{await signOut();showAuth(
 setInterval(()=>{if(pps()>0){state.coins+=pps();state.total+=pps();render()}},1000);
 setInterval(save,5000);
 setInterval(()=>{if(getPlayerId()) loadRemotePoints()},5000);
+setInterval(()=>{if(getPlayerId()) loadLeaderboard()},10000);
 
 (async()=>{
   const local=getLocalPlayer();
