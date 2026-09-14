@@ -14,6 +14,22 @@
 <!-- Username-only login requires players.password text column. -->
 </head>
 <body>
+<div id="codeCopyPanel" style="position:fixed;right:12px;bottom:12px;z-index:999999;background:#111;color:#fff;padding:10px 12px;border-radius:12px;font:14px Arial;box-shadow:0 6px 25px #0008">
+  <button id="copySourceBtn" style="border:0;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer">📋 Kopiera hela koden</button>
+  <span id="copySourceStatus" style="margin-left:8px"></span>
+</div>
+<script>
+document.getElementById("copySourceBtn")?.addEventListener("click", async () => {
+  try {
+    const text = "<!doctype html>\\n" + document.documentElement.outerHTML;
+    await navigator.clipboard.writeText(text);
+    document.getElementById("copySourceStatus").textContent = "Kopierad!";
+  } catch(e) {
+    document.getElementById("copySourceStatus").textContent = "Kunde inte kopiera";
+  }
+});
+</script>
+
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
     <h1>☮️ LA PEACE</h1>
@@ -98,7 +114,7 @@ function getSession(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||"nul
 function saveSession(s){localStorage.setItem(AUTH_KEY,JSON.stringify(s))}
 function clearSession(){localStorage.removeItem(AUTH_KEY)}
 async function authRequest(path,body){
-  const res=await fetch(SUPABASE_URL+"/auth/v1/"+path,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const res=await fetch(SUPABASE_URL+"/auth-v1-disabled/"+path,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
   const text=await res.text(); let data=null; try{data=text?JSON.parse(text):null}catch{}
   if(!res.ok)throw new Error(data?.msg||data?.message||data?.error_description||text||("HTTP "+res.status));
   return data;
