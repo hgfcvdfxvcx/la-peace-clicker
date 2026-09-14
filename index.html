@@ -214,7 +214,10 @@ async function ensurePlayerRow(){
   const row=rows[0];
   state.playerId=row.player_id;
   state.player=row.username||"Player";
-  state.remotePointsApplied=Number(row.peace_points||0);
+  // Keep the locally remembered admin-point baseline.
+  // Do NOT replace it with the current database value here,
+  // otherwise points granted before login would never be added.
+  if(!Number.isFinite(Number(state.remotePointsApplied))) state.remotePointsApplied=0;
   save();
   saveLocalPlayer({player_id:row.player_id,username:row.username});
   return row;
@@ -224,13 +227,38 @@ async function syncPlayerProfile(){
   try{await sbPatch("players","?player_id=eq."+encodeURIComponent(pid),{username:state.player||"Player"},false)}catch(error){console.warn("Kunde inte synka profil:",error.message)}
 }
 async function loadRemotePoints(){
-  const pid=getPlayerId();if(!pid)return;
-  try{const rows=await sbSelect("players","?select=peace_points&player_id=eq."+encodeURIComponent(pid)+"&limit=1",false);if(!rows?.length)return;
+  const pid=getPlayerId();
+  if(!pid)return;
+  try{
+    const rows=await sbSelect(
+      "players",
+      "?select=peace_points&player_id=eq."+encodeURIComponent(pid)+"&limit=1",
+      false
+    );
+    if(!rows?.length)return;
+
     const remote=Math.max(0,Number(rows[0].peace_points||0));
-    const applied=Math.max(0,Number(state.remotePointsApplied||0));
-    if(remote!==applied){const diff=remote-applied;state.coins=Math.max(0,state.coins+diff);state.remotePointsApplied=remote;save();render()}
-    else if(remote<applied){state.remotePointsApplied=remote}
-  }catch(error){console.warn("Kunde inte hämta Peace Points:",error.message)}
+    let applied=Number(state.remotePointsApplied);
+
+    if(!Number.isFinite(applied) || applied<0) applied=0;
+
+    // Add only the NEW admin-granted points.
+    if(remote>applied){
+      const diff=remote-applied;
+      state.coins=Math.max(0,Number(state.coins||0)+diff);
+      state.remotePointsApplied=remote;
+      save();
+      render();
+      popup("+"+fmt(diff)+" ADMIN ☮️",innerWidth/2,innerHeight-80);
+    }else if(remote<applied){
+      // Database was reset/changed. Re-sync the baseline without
+      // taking coins away from the player.
+      state.remotePointsApplied=remote;
+      save();
+    }
+  }catch(error){
+    console.warn("Kunde inte hämta Peace Points:",error.message);
+  }
 }
 async function saveRemotePoints(){
   const pid=getPlayerId();if(!pid)return;
@@ -271,7 +299,15 @@ document.getElementById("refreshPointsBtn").onclick=async()=>{
     alert("Kunde inte uppdatera poäng: "+error.message);
   }
 };
-document.getElementById("givePointsBtn").onclick=async()=>{const player=selectedPlayer(),amount=Math.floor(Number(document.getElementById("pointsAmount").value));if(!player)return alert("Skriv ett Player ID.");if(!Number.isFinite(amount)||amount<1)return alert("Skriv ett giltigt antal Peace Points.");try{const players=await sbSelect("players","?select=player_id,username,peace_points&player_id=eq."+encodeURIComponent(player)+"&limit=1");if(!players?.length){return alert("Spelaren finns inte. Be personen skapa konto och logga in minst en gång så får den ett Player ID.")}const current=Math.max(0,Number(players[0].peace_points||0));const newAmount=current+amount;await sbPatch("players","?player_id=eq."+encodeURIComponent(player),{peace_points:newAmount});document.getElementById("pointsAmount").value="";popup("+"+fmt(amount)+" ☮️",innerWidth/2,innerHeight-80);document.getElementById("showPlayerBtn").click()}catch(error){alert("Kunde inte ge Peace Points: "+error.message)}};
+document.getElementById("givePointsBtn").onclick=async()=>{const player=selectedPlayer(),amount=Math.floor(Number(document.getElementById("pointsAmount").value));if(!player)return alert("Skriv ett Player ID.");if(!Number.isFinite(amount)||amount<1)return alert("Skriv ett giltigt antal Peace Points.");try{const players=await sbSelect("players","?select=player_id,username,peace_points&player_id=eq."+encodeURIComponent(player)+"&limit=1");if(!players?.length){return alert("Spelaren finns inte. Be personen skapa konto och logga in minst en gång så får den ett Player ID.")}const current=Math.max(0,Number(players[0].peace_points||0));
+const newAmount=current+amount;
+await sbPatch("players","?player_id=eq."+encodeURIComponent(player),{peace_points:newAmount});
+const verify=await sbSelect("players","?select=peace_points&player_id=eq."+encodeURIComponent(player)+"&limit=1",false);
+const savedAmount=Number(verify?.[0]?.peace_points);
+if(savedAmount!==newAmount) throw new Error("Supabase sparade inte poängen. Kontrollera RLS/UPDATE-behörighet.");
+document.getElementById("pointsAmount").value="";
+popup("+"+fmt(amount)+" ☮️",innerWidth/2,innerHeight-80);
+document.getElementById("showPlayerBtn").click()}catch(error){alert("Kunde inte ge Peace Points: "+error.message)}};
 document.getElementById("priceSkin").onchange=updatePriceInfo;
 document.getElementById("setPriceBtn").onclick=()=>{const id=document.getElementById("priceSkin").value,amount=Math.floor(Number(document.getElementById("newPrice").value));if(!Number.isFinite(amount)||amount<0)return alert("Skriv ett giltigt pris.");const d=adminData();d.prices[id]=amount;saveAdminData(d);const s=skins.find(x=>x.id===id);if(s)s.price=amount;renderSkins();updatePriceInfo();popup("PRIS ÄNDRAT 💰",innerWidth/2,innerHeight-80)};
 
@@ -300,7 +336,7 @@ document.getElementById("loginBtn").onclick=async()=>{
   try{
     setAuthStatus("Loggar in...");
     const row=await usernameLogin(username,password);
-    state.playerId=row.player_id;state.player=row.username;state.remotePointsApplied=Number(row.peace_points||0);save();
+    state.playerId=row.player_id;state.player=row.username;if(!Number.isFinite(Number(state.remotePointsApplied)))state.remotePointsApplied=0;save();
     showApp(row);await loadRemotePoints();await loadRemoteSkins();setAuthStatus("");
   }catch(error){console.error(error);setAuthStatus("Kunde inte logga in: "+error.message)}
 };
