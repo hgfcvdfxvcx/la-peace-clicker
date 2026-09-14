@@ -58,7 +58,7 @@
 <section id="leaderboard" class="panel">
 <div class="card">
   <h2>🏆 LA PEACE Leaderboard</h2>
-  <p class="admin-note">Topplistan sorteras efter spelarens sparade Peace Points.</p>
+  <p class="admin-note">Topplistan uppdateras automatiskt ungefär varannan sekund och visar spelarens aktuella sparade Peace Points.</p>
   <div id="leaderboardList" class="leaderboard"><div class="admin-list">Laddar topplistan...</div></div>
   <p id="leaderboardStatus" class="leader-note"></p>
   <button id="refreshLeaderboardBtn" style="margin-top:10px;width:100%;padding:10px;border:1px solid #8d6426;background:#30200d;color:#ffe1a0;border-radius:9px;cursor:pointer;font-weight:700">🔄 Uppdatera leaderboard</button>
@@ -270,7 +270,22 @@ async function loadRemotePoints(){
 }
 async function saveRemotePoints(){
   const pid=getPlayerId();if(!pid)return;
-  try{await sbPatch("players","?player_id=eq."+encodeURIComponent(pid),{peace_points:Math.floor(state.coins)},false);state.remotePointsApplied=Math.floor(state.coins);save()}catch(error){console.warn("Kunde inte spara Peace Points:",error.message)}
+  const amount=Math.max(0,Math.floor(Number(state.coins||0)));
+  const token=Math.max(0,Number(state.pointsResetToken||0));
+  try{
+    // Only save if the reset token is still the one this client knows.
+    // This prevents an old browser session from undoing an admin reset.
+    await sbPatch(
+      "players",
+      "?player_id=eq."+encodeURIComponent(pid)+"&points_reset_token=eq."+encodeURIComponent(token),
+      {peace_points:amount},
+      false
+    );
+    state.remotePointsApplied=amount;
+    save();
+  }catch(error){
+    console.warn("Kunde inte spara Peace Points:",error.message);
+  }
 }
 async function loadRemoteSkins(){
   if(!state.playerId)return;
@@ -280,8 +295,7 @@ let remoteSaveTimer=null;
 function queueRemoteSave(){clearTimeout(remoteSaveTimer);remoteSaveTimer=setTimeout(saveGameRemote,700)}
 async function saveGameRemote(){
   const user=currentUser();if(!user||!state.playerId)return;
-  // The existing database stores admin-granted points in peace_points. Do not overwrite them here.
-  // Game progress remains local so admin grants stay additive.
+  await saveRemotePoints();
 }
 
 // Game actions
@@ -448,7 +462,8 @@ document.getElementById("logoutBtn").onclick=async()=>{await signOut();showAuth(
 setInterval(()=>{if(pps()>0){state.coins+=pps();state.total+=pps();render()}},1000);
 setInterval(save,5000);
 setInterval(()=>{if(getPlayerId()) loadRemotePoints()},5000);
-setInterval(()=>{if(getPlayerId()) loadLeaderboard()},10000);
+setInterval(()=>{if(getPlayerId()) loadLeaderboard()},2000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&getPlayerId()){loadLeaderboard();loadRemotePoints()}});
 
 (async()=>{
   const local=getLocalPlayer();
