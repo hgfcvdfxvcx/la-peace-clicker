@@ -282,13 +282,8 @@ document.getElementById("givePointsBtn").onclick=async()=>{
   const player=selectedPlayer();
   const amount=Math.floor(Number(document.getElementById("pointsAmount").value));
 
-  if(!player){
-    return alert("Skriv ett spelar-ID.");
-  }
-
-  if(!Number.isFinite(amount)||amount<1){
-    return alert("Skriv ett giltigt antal Peace Points.");
-  }
+  if(!player)return alert("Skriv ett spelar-ID.");
+  if(!Number.isFinite(amount)||amount<1)return alert("Skriv ett giltigt antal Peace Points.");
 
   try{
     const players=await sbSelect(
@@ -297,32 +292,38 @@ document.getElementById("givePointsBtn").onclick=async()=>{
     );
 
     if(!players || players.length===0){
-      return alert("Spelaren finns inte i databasen. Spelaren måste öppna spelet minst en gång först.");
-    }
-
-    const current=Math.max(0,Number(players[0].peace_points||0));
-    const newAmount=current+amount;
-
-    await sbRequest(
-      "players?player_id=eq."+encodeURIComponent(player),
-      {
-        method:"PATCH",
+      // Skapa spelaren direkt – spelaren behöver inte öppna spelet först.
+      await sbRequest("players",{
+        method:"POST",
         headers:{"Prefer":"return=minimal"},
-        body:JSON.stringify({peace_points:newAmount})
-      }
-    );
+        body:JSON.stringify({
+          player_id:player,
+          username:player,
+          peace_points:amount
+        })
+      });
+    }else{
+      const current=Math.max(0,Number(players[0].peace_points||0));
+      const newAmount=current+amount;
 
-    // If the admin is giving points to the current browser's player, mark the
-    // new database balance as already known so it is not added twice on reload.
-    if(player===getPlayerId()){
-      state.remotePointsApplied=newAmount;
-      save();
+      await sbRequest(
+        "players?player_id=eq."+encodeURIComponent(player),
+        {
+          method:"PATCH",
+          headers:{"Prefer":"return=minimal"},
+          body:JSON.stringify({peace_points:newAmount})
+        }
+      );
+
+      if(player===getPlayerId()){
+        state.remotePointsApplied=newAmount;
+        save();
+      }
     }
 
     document.getElementById("pointsAmount").value="";
     popup("+"+fmt(amount)+" ☮️",innerWidth/2,innerHeight-80);
     document.getElementById("showPlayerBtn").click();
-
   }catch(error){
     console.error(error);
     alert("Kunde inte ge Peace Points: "+error.message);
