@@ -195,7 +195,7 @@ function render(){
  const equipped=localStorage.getItem("laPeaceEquipped")||"classic";const es=skins.find(s=>s.id===equipped)||skins[0];document.getElementById("portrait").style.filter=es.filter;
 }
 function buy(u){const p=price(u);if(state.coins<p)return;state.coins-=p;state.upgrades[u.id]=(state.upgrades[u.id]||0)+1;save();render();
-queueRemoteSave()}
+loadGlobalPrices();queueRemoteSave()}
 function buySkin(s){if(state.ownedSkins.includes(s.id)){localStorage.setItem("laPeaceEquipped",s.id);render();popup("EQUIPPED ✨",innerWidth/2,innerHeight-80);queueRemoteSave();return}if(state.coins<s.price)return;state.coins-=s.price;state.ownedSkins.push(s.id);localStorage.setItem("laPeaceEquipped",s.id);save();render();popup("NY SKIN! ✨",innerWidth/2,innerHeight-80);queueRemoteSave()}
 function renderSkins(){const g=document.getElementById("skinGrid");g.innerHTML="";const equipped=localStorage.getItem("laPeaceEquipped")||"classic";const adminPrices=adminData().prices||{};skins.forEach(s=>{s.price=adminPrices[s.id]??s.price;const own=state.ownedSkins.includes(s.id),b=document.createElement("div");b.className="skin"+(own?" owned":"");b.innerHTML='<h3>'+s.name+(own?'<span class="badge">ÄGER</span>':'')+'</h3><p>'+s.desc+'</p><p><b>'+(s.price?fmt(s.price)+" ☮️":"Gratis")+'</b></p><button '+((!own&&state.coins<s.price)?"disabled":"")+'>'+(equipped===s.id?"Utrustad ✓":own?"Utrusta":"Köp")+'</button>';b.querySelector("button").onclick=()=>buySkin(s);g.appendChild(b)})}
 function popup(text,x,y){const el=document.createElement("div");el.className="float";el.textContent=text;el.style.left=x+"px";el.style.top=y+"px";document.body.appendChild(el);setTimeout(()=>el.remove(),800)}
@@ -311,26 +311,20 @@ popup("+"+fmt(amount)+" ☮️",innerWidth/2,innerHeight-80);
 document.getElementById("showPlayerBtn").click()}catch(error){alert("Kunde inte ge Peace Points: "+error.message)}};
 document.getElementById("priceSkin").onchange=updatePriceInfo;
 
-const PRICE_SETTINGS_PLAYER="__LA_PEACE_PRICES__";
-
 async function loadGlobalPrices(){
   try{
     const rows=await sbSelect(
-      "player_skins",
-      "?select=skin_id,skin_name&player=eq."+encodeURIComponent(PRICE_SETTINGS_PLAYER),
+      "game_settings",
+      "?select=key,value&key=eq.skin_prices&limit=1",
       false
     );
-    const prices={};
-    (rows||[]).forEach(r=>{
-      if(String(r.skin_id||"").startsWith("price_")){
-        const id=String(r.skin_id).slice(6);
-        const n=Number(r.skin_name);
-        if(Number.isFinite(n)&&n>=0) prices[id]=n;
-      }
-    });
-    if(Object.keys(prices).length){
+    const row=rows?.[0];
+    if(row?.value){
+      const prices=typeof row.value==="string"?JSON.parse(row.value):row.value;
       skins.forEach(s=>{
-        if(Object.prototype.hasOwnProperty.call(prices,s.id)) s.price=prices[s.id];
+        if(Object.prototype.hasOwnProperty.call(prices,s.id)){
+          s.price=Number(prices[s.id]);
+        }
       });
       const d=adminData();
       d.prices={...d.prices,...prices};
@@ -343,23 +337,22 @@ async function loadGlobalPrices(){
   }
 }
 
-async function saveGlobalPrice(id,amount){
-  const key="price_"+id;
-  // Remove the old value first so there can never be duplicate price rows.
-  await sbDelete(
-    "player_skins",
-    "?player=eq."+encodeURIComponent(PRICE_SETTINGS_PLAYER)+
-    "&skin_id=eq."+encodeURIComponent(key)
-  );
-  await sbInsert(
-    "player_skins",
-    {
-      player:PRICE_SETTINGS_PLAYER,
-      skin_id:key,
-      skin_name:String(amount)
-    },
+async function saveGlobalPrices(prices){
+  const body={key:"skin_prices",value:prices};
+  const existing=await sbSelect(
+    "game_settings",
+    "?select=id&key=eq.skin_prices&limit=1",
     false
   );
+  if(existing?.length){
+    await sbPatch(
+      "game_settings",
+      "?key=eq.skin_prices",
+      {value:prices}
+    );
+  }else{
+    await sbInsert("game_settings",body,false);
+  }
 }
 
 document.getElementById("setPriceBtn").onclick=async()=>{
@@ -369,20 +362,11 @@ document.getElementById("setPriceBtn").onclick=async()=>{
   try{
     const s=skins.find(x=>x.id===id);
     if(!s)return alert("Skin hittades inte.");
-    await saveGlobalPrice(id,amount);
     s.price=amount;
     const d=adminData();
     d.prices[id]=amount;
     saveAdminData(d);
-    const verify=await sbSelect(
-      "player_skins",
-      "?select=skin_name&player=eq."+encodeURIComponent(PRICE_SETTINGS_PLAYER)+
-      "&skin_id=eq."+encodeURIComponent("price_"+id)+"&limit=1",
-      false
-    );
-    if(String(verify?.[0]?.skin_name)!==String(amount)){
-      throw new Error("Priset kunde inte sparas i Supabase.");
-    }
+    await saveGlobalPrices(d.prices);
     renderSkins();
     updatePriceInfo();
     popup("PRIS SPARAT FÖR ALLA 💰",innerWidth/2,innerHeight-80);
@@ -390,7 +374,7 @@ document.getElementById("setPriceBtn").onclick=async()=>{
     console.error(error);
     alert("Kunde inte spara priset: "+error.message);
   }
-};};
+};if(!Number.isFinite(amount)||amount<0)return alert("Skriv ett giltigt pris.");const d=adminData();d.prices[id]=amount;saveAdminData(d);const s=skins.find(x=>x.id===id);if(s)s.price=amount;renderSkins();updatePriceInfo();popup("PRIS ÄNDRAT 💰",innerWidth/2,innerHeight-80)};
 
 // Auth UI
 function showApp(row){document.getElementById("authGate").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("loggedInName").textContent=row.username||state.player||"Player";document.getElementById("myPlayerId").textContent=row.player_id;document.getElementById("adminPlayer").value=row.player_id;render()}
@@ -444,8 +428,6 @@ setInterval(()=>{if(getPlayerId()) loadRemotePoints()},5000);
     setAuthStatus("Kunde inte logga in automatiskt: "+error.message);
   }
 })();
-\n\n
-loadGlobalPrices();
 </script>
 </body>
 </html>
