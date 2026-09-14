@@ -12,6 +12,20 @@
 .auth-gate{min-height:100vh;display:flex;align-items:center;justify-content:center;width:100%;padding:24px}.auth-card{width:min(460px,100%);background:#17100aee;border:1px solid #a9782d88;border-radius:20px;box-shadow:0 12px 40px #0009;padding:24px;text-align:center}.auth-card h1{margin-top:0}.auth-card input{width:100%;padding:13px;margin:7px 0;border-radius:10px;border:1px solid #6e4c20;background:#110c07;color:#fff}.auth-card button{width:100%;padding:12px;margin-top:8px;border:1px solid #8d6426;background:#30200d;color:#ffe1a0;border-radius:10px;cursor:pointer;font-weight:700}.auth-status{min-height:22px;margin:10px 0;color:#ffd66b}.account-bar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 0 14px;color:#e7c98a}.account-bar button{padding:7px 12px;border:1px solid #6e4c20;background:#21170c;color:#e8cf9b;border-radius:8px;cursor:pointer}.hidden{display:none!important}\nbutton,input,select{pointer-events:auto!important;position:relative;z-index:5}.auth-gate{position:relative;z-index:1000;pointer-events:auto}.auth-card{position:relative;z-index:1001;pointer-events:auto}.auth-card button,.auth-card input{pointer-events:auto!important}
 </style>
 <!-- Username-only login uses players.password_hash. -->
+
+<style id="peace-click-effects">
+@keyframes peaceFloat {
+  0% { transform: translate(-50%,-10px) scale(.65); opacity:0; }
+  15% { opacity:1; }
+  100% { transform: translate(-50%,-105px) scale(1.15); opacity:0; }
+}
+.peace-click-pop {
+  position:fixed; z-index:999999; pointer-events:none;
+  font-size:28px; font-weight:900; text-shadow:0 3px 12px rgba(0,0,0,.45);
+  animation:peaceFloat .8s cubic-bezier(.2,.8,.2,1) forwards;
+  white-space:nowrap;
+}
+</style>
 </head>
 <body>
 <div id="authGate" class="auth-gate">
@@ -196,6 +210,17 @@ let remoteSaveTimer=null;
 function queueRemoteSave(){clearTimeout(remoteSaveTimer);remoteSaveTimer=setTimeout(saveGameRemote,700)}
 async function saveGameRemote(){save()}
 
+
+function popup(message,x,y){
+  const el=document.createElement("div");
+  el.className="peace-click-pop";
+  el.textContent=message;
+  el.style.left=Math.max(35,Math.min(innerWidth-35,Number(x)||innerWidth/2))+"px";
+  el.style.top=Math.max(45,Math.min(innerHeight-45,Number(y)||innerHeight/2))+"px";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),850);
+}
+
 // Game actions
 const portrait=document.getElementById("portrait");
 let lastRealClick=0;
@@ -210,7 +235,7 @@ portrait.addEventListener("click",async e=>{
   try{
     const gain=Math.min(100,Math.max(1,clickPower()));
     state.coins+=gain;state.total+=gain;
-    popup("+"+fmt(gain)+" ☮️",e.clientX,e.clientY);
+    popup("☮️ +" + fmt(gain), e.clientX, e.clientY);
     render();
     await addRemotePoints(gain);
     await loadRemotePoints();
