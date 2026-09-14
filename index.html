@@ -197,7 +197,25 @@ function queueRemoteSave(){clearTimeout(remoteSaveTimer);remoteSaveTimer=setTime
 async function saveGameRemote(){save()}
 
 // Game actions
-document.getElementById("portrait").onclick=async e=>{const gain=Math.min(100,Math.max(1,clickPower()));state.coins+=gain;state.total+=gain;popup("+"+fmt(gain)+" ☮️",e.clientX,e.clientY);render();await addRemotePoints(gain);await loadRemotePoints()};
+const portrait=document.getElementById("portrait");
+let lastRealClick=0;
+let clickLock=false;
+portrait.onclick=async e=>{
+  // Block clicks generated from the DevTools console / scripts.
+  if(!e || e.isTrusted!==true) return;
+  const now=performance.now();
+  if(now-lastRealClick<70 || clickLock) return;
+  lastRealClick=now;
+  clickLock=true;
+  try{
+    const gain=Math.min(100,Math.max(1,clickPower()));
+    state.coins+=gain;state.total+=gain;
+    popup("+"+fmt(gain)+" ☮️",e.clientX,e.clientY);
+    render();
+    await addRemotePoints(gain);
+    await loadRemotePoints();
+  }finally{clickLock=false}
+};
 document.getElementById("save").onclick=()=>{save();popup("SPARAT!",innerWidth/2,innerHeight-80)};
 document.getElementById("savePlayer").onclick=async()=>{state.player=document.getElementById("playerName").value.trim()||"Player";save();await syncPlayerProfile();popup("PROFIL SPARAD!",innerWidth/2,innerHeight-80);render()};
 document.getElementById("reset").onclick=()=>{if(confirm("Vill du verkligen börja om?")){state.coins=0;state.total=0;state.upgrades={};state.ownedSkins=["classic"];state.remotePointsApplied=0;localStorage.removeItem("laPeaceEquipped");save();render()}};
